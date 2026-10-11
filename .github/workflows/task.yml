@@ -1,33 +1,55 @@
-name: CI
+name: Sync upstream fork
 
 on:
   schedule:
-    - cron: "30 23 * * *"  # 每天 23:30 触发一次
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-upstream-fork
+  cancel-in-progress: false
 
 jobs:
-  build:
+  sync-fork:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
-      - name: Create timestamped .md file
+      - name: Prepare upstream sync
         run: |
-          timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-          echo "Last update time: $timestamp" > "DATA_UPDATE.md"
-
-      - name: Commit and push .md file
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add DATA_UPDATE.md
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
+          git remote add upstream https://github.com/XiaomingX/ai-money-maker-handbook.git
+          git fetch upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Fork already contains the latest upstream commit"
           else
-            git commit -m "Update DATA_UPDATE.md with timestamp $(date '+%Y-%m-%d %H:%M:%S')"
-            git push origin main
+            git merge --no-edit upstream/main
           fi
-    
+
+      - name: Create or update fork sync PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: automation/sync-upstream
+          delete-branch: true
+          commit-message: "chore: sync upstream fork"
+          title: "Automated upstream sync"
+          body: |
+            This PR is created by GitHub Actions to sync
+            `XiaomingX/ai-money-maker-handbook` into this fork.
+
+      - name: Automatically merge upstream sync PR
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --merge --delete-branch
