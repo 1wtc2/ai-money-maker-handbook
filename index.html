@@ -20,8 +20,8 @@
 <script>
 (function(){
 "use strict";
-var OWNER="1wtc2",REPO="ai-money-maker-handbook",BRANCH="main",API="https://api.github.com/repos/1wtc2/ai-money-maker-handbook/contents/",RAW="https://raw.githubusercontent.com/1wtc2/ai-money-maker-handbook/main/";
-var folders=[{path:"程序员的副业赚钱宝典",label:"程序员的副业赚钱宝典"},{path:"创业者早期的烦恼树洞",label:"创业者早期的烦恼树洞"}],docs=[],titleByPath={},activePath="",requestId=0;
+var OWNER="1wtc2",REPO="ai-money-maker-handbook",BRANCH="main",RAW="https://raw.githubusercontent.com/1wtc2/ai-money-maker-handbook/main/";
+var folders=[{path:"程序员的副业赚钱宝典",label:"程序员的副业赚钱宝典"},{path:"创业者早期的烦恼树洞",label:"创业者早期的烦恼树洞"}],docs=[],activePath="",requestId=0;
 var directory=document.getElementById("directory"),search=document.getElementById("search"),articleScroll=document.getElementById("article-scroll"),totalCount=document.getElementById("total-count"),crumb=document.getElementById("crumb"),source=document.getElementById("source"),prev=document.getElementById("prev"),next=document.getElementById("next");
 function esc(v){return String(v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function encodePath(p){return p.split("/").map(encodeURIComponent).join("/");}
@@ -74,8 +74,10 @@ async function openDoc(path,pushHash){var d=docs.find(function(x){return x.path=
  catch(e){if(id!==requestId)return;articleScroll.innerHTML='<div class="status error">这章暂时无法加载：'+esc(e.message)+'。<br><button class="retry" id="retry">重试</button></div>';document.getElementById("retry").addEventListener("click",function(){openDoc(path,false);});}
 }
 async function loadDirectory(){directory.innerHTML='<div class="status">正在从 fork 读取章节目录…</div>';
- try{var titleResponse=await fetch("./chapter-index.json",{cache:"no-cache"});if(!titleResponse.ok)throw new Error("章节索引读取失败："+titleResponse.status);var titleList=await titleResponse.json();titleByPath={};titleList.forEach(function(x){titleByPath[x.path]=x.title;});var result=await Promise.all(folders.map(async function(f){var r=await fetch(API+encodePath(f.path)+"?ref="+BRANCH+"&per_page=1000",{headers:{Accept:"application/vnd.github+json"}});if(!r.ok)throw new Error("GitHub 目录接口返回 "+r.status);var data=await r.json();return data.filter(function(x){return x.type==="file"&&/^ch\d{4}\.md$/i.test(x.name);}).map(function(x){return {path:x.path,folder:f.path,folderLabel:f.label,title:titleByPath[x.path]||""};}).sort(function(a,b){return number(a.path)-number(b.path);});}));
- docs=result.reduce(function(a,b){return a.concat(b);},[]);totalCount.textContent=docs.length+" 章";renderDirectory();var wanted="";try{wanted=new URLSearchParams(location.hash.slice(1)).get("doc")||"";}catch(e){}if(!docs.some(function(d){return d.path===wanted;}))wanted=(docs.find(function(d){return d.folder===folders[0].path;})||docs[0]||{}).path||"";if(wanted)openDoc(wanted,!location.hash);else directory.innerHTML='<div class="status">仓库中没有找到 Markdown 章节。</div>';
+ try{var titleResponse=await fetch("./chapter-index.json",{cache:"no-cache",signal:AbortSignal.timeout(12000)});if(!titleResponse.ok)throw new Error("章节索引读取失败："+titleResponse.status);var titleList=await titleResponse.json();if(!Array.isArray(titleList))throw new Error("章节索引格式不正确");
+ docs=titleList.reduce(function(all,x){if(!x||typeof x.path!=="string")return all;var folder=folders.find(function(f){return x.path.indexOf(f.path+"/")===0;});if(!folder||!/^ch\\d{4}\\.md$/i.test(x.path.split("/").pop()))return all;all.push({path:x.path,folder:folder.path,folderLabel:folder.label,title:typeof x.title==="string"?x.title:""});return all;},[]);
+ docs.sort(function(a,b){var af=folders.findIndex(function(f){return f.path===a.folder;}),bf=folders.findIndex(function(f){return f.path===b.folder;});return af-bf||number(a.path)-number(b.path);});
+ totalCount.textContent=docs.length+" 章";renderDirectory();var wanted="";try{wanted=new URLSearchParams(location.hash.slice(1)).get("doc")||"";}catch(e){}if(!docs.some(function(d){return d.path===wanted;}))wanted=(docs.find(function(d){return d.folder===folders[0].path;})||docs[0]||{}).path||"";if(wanted)openDoc(wanted,!location.hash);else directory.innerHTML='<div class="status">仓库中没有找到 Markdown 章节。</div>';
  }catch(e){totalCount.textContent="读取失败";directory.innerHTML='<div class="status error">目录暂时无法读取：'+esc(e.message)+'。<br><button class="retry" id="retry-index">重试</button></div>';document.getElementById("retry-index").addEventListener("click",loadDirectory);}
 }
 directory.addEventListener("click",function(e){var b=e.target.closest("[data-path]");if(b)openDoc(b.dataset.path,true);});
