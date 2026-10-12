@@ -393,7 +393,7 @@ function renderBlocks(lines,path){
  for(var i=0;i<lines.length;i++){var line=lines[i],f=/^\s*(\x60{3,}|~{3,})(.*)$/.exec(line);
   if(f){fp();cl();fq();if(code!==null){out.push("<pre><code>"+esc(code.join("\n"))+"</code></pre>");code=null;}else code=[];continue;}
   if(code!==null){code.push(line);continue;}
-  if(/^\s*\|.*\|\s*$/.test(line)&&i+1<lines.length&&/^\s*\|?\s*:?-{3,}/.test(lines[i+1])){fp();cl();fq();var e=i+2;while(e<lines.length&&/^\s*\|.*\|\s*$/.test(lines[e]))e++;var rows=lines.slice(i,e),heads=cells(rows[0]),body=rows.slice(2);out.push('<div class="table-wrap"><table><thead><tr>'+heads.map(function(c){return "<th>"+inline(c,path)+"</th>";}).join("")+"</tr></thead><tbody>"+body.map(function(r){return "<tr>"+cells(r).map(function(c){return "<td>"+inline(c,path)+"</td>";}).join("")+"</tr>";}).join("")+"</tbody></table></div>');i=e-1;continue;}
+  if(/^\s*\|.*\|\s*$/.test(line)&&i+1<lines.length&&/^\s*\|?\s*:?-{3,}/.test(lines[i+1])){fp();cl();fq();var e=i+2;while(e<lines.length&&/^\s*\|.*\|\s*$/.test(lines[e]))e++;var rows=lines.slice(i,e),heads=cells(rows[0]),body=rows.slice(2);out.push('<div class="table-wrap"><table><thead><tr>'+heads.map(function(c){return "<th>"+inline(c,path)+"</th>";}).join("")+"</tr></thead><tbody>"+body.map(function(r){return "<tr>"+cells(r).map(function(c){return "<td>"+inline(c,path)+"</td>";}).join("")+"</tr>";}).join("")+"</tbody></table></div>");i=e-1;continue;}
   var h=/^(#{1,6})\s+(.+)$/.exec(line),li=/^\s*([-*+]|\d+[.)])\s+(.+)$/.exec(line);
   if(h){fp();cl();fq();var n=Math.min(h[1].length,4);out.push("<h"+n+">"+inline(h[2],path)+"</h"+n+">");}
   else if(/^\s*>/.test(line)){fp();cl();quote.push(line.replace(/^\s*>\s?/,""));}
