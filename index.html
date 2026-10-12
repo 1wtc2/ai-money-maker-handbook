@@ -446,7 +446,8 @@ async function loadDirectory(){directory.innerHTML='<div class="status">正在�
  totalCount.textContent=docs.length+" 章";renderDirectory();var wanted="";try{wanted=new URLSearchParams(location.hash.slice(1)).get("doc")||"";}catch(e){}if(!docs.some(function(d){return d.path===wanted;}))wanted=(docs.find(function(d){return d.folder===folders[0].path;})||docs[0]||{}).path||"";if(wanted)openDoc(wanted,!location.hash);else directory.innerHTML='<div class="status">仓库中没有找到 Markdown 章节。</div>';
  }catch(e){totalCount.textContent="读取失败";directory.innerHTML='<div class="status error">目录暂时无法读取：'+esc(e.message)+'。<br><button class="retry" id="retry-index">重试</button></div>';document.getElementById("retry-index").addEventListener("click",loadDirectory);}
 }
-directory.addEventListener("toggle",function(e){var group=e.target;if(group&&group.matches&&group.matches("details.group[data-folder]"))folderOpenState[group.dataset.folder]=group.open;},true);\ndirectory.addEventListener("click",function(e){var b=e.target.closest("[data-path]");if(b)openDoc(b.dataset.path,true);});
+directory.addEventListener("toggle",function(e){var group=e.target;if(group&&group.matches&&group.matches("details.group[data-folder]"))folderOpenState[group.dataset.folder]=group.open;},true);
+directory.addEventListener("click",function(e){var b=e.target.closest("[data-path]");if(b)openDoc(b.dataset.path,true);});
 articleScroll.addEventListener("click",function(e){var a=e.target.closest("[data-doc]");if(a){e.preventDefault();openDoc(a.dataset.doc,true);}});
 search.addEventListener("input",renderDirectory);
 prev.addEventListener("click",function(){var i=currentIndex();if(i>0)openDoc(docs[i-1].path,true);});
