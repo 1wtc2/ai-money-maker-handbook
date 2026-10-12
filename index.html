@@ -185,26 +185,40 @@ a { color: inherit; }
   width: 100%;
   align-items: flex-start;
   gap: 10px;
-  padding: 9px 10px;
-  border: 0;
+  padding: 9px 10px 9px 8px;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
   border-radius: 9px;
   background: transparent;
   color: #48566d;
   text-align: left;
   cursor: pointer;
-  transition: background .14s, color .14s;
+  transition: background .14s, color .14s, border-color .14s, transform .14s, box-shadow .14s;
 }
-.chapter:hover { background: #f4f6fb; color: var(--blue-dark); }
-.chapter[aria-current=true] { background: var(--blue-soft); color: var(--blue-dark); }
+.chapter:hover { background: #f4f6fb; color: var(--blue-dark); transform: translateX(2px); }
+.chapter:active { transform: scale(.99); }
+.chapter[aria-current="true"] {
+  border-left-color: var(--blue);
+  background: #e8efff;
+  color: var(--blue-dark);
+  box-shadow: inset 0 0 0 1px rgba(54, 89, 189, .1);
+}
 .chapter-no {
+  display: inline-flex;
   flex: 0 0 42px;
-  padding-top: 2px;
+  min-height: 23px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border-radius: 6px;
   color: #8490a5;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
-.chapter[aria-current=true] .chapter-no { color: var(--blue); }
+.chapter[aria-current="true"] .chapter-no { background: #d8e3ff; color: var(--blue-dark); font-weight: 750; }
+.chapter[aria-current="true"] .chapter-name { color: var(--blue-dark); font-weight: 700; }
 .chapter-name { min-width: 0; font-size: 13px; line-height: 1.58; overflow-wrap: anywhere; }
+.group.has-current > summary { background: #f5f7ff; color: var(--blue-dark); }
 .no-results { padding: 20px 12px; color: var(--muted); font-size: 13px; text-align: center; }
 .reader { display: flex; flex-direction: column; overflow: hidden; }
 .reader-toolbar {
@@ -363,7 +377,7 @@ a { color: inherit; }
 (function(){
 "use strict";
 var OWNER="1wtc2",REPO="ai-money-maker-handbook",BRANCH="main",RAW="https://raw.githubusercontent.com/1wtc2/ai-money-maker-handbook/main/";
-var folders=[{path:"程序员的副业赚钱宝典",label:"程序员的副业赚钱宝典"},{path:"创业者早期的烦恼树洞",label:"创业者早期的烦恼树洞"}],docs=[],activePath="",requestId=0;
+var folders=[{path:"程序员的副业赚钱宝典",label:"程序员的副业赚钱宝典"},{path:"创业者早期的烦恼树洞",label:"创业者早期的烦恼树洞"}],docs=[],folderOpenState={},activePath="",requestId=0;
 var directory=document.getElementById("directory"),search=document.getElementById("search"),articleScroll=document.getElementById("article-scroll"),totalCount=document.getElementById("total-count"),crumb=document.getElementById("crumb"),source=document.getElementById("source"),prev=document.getElementById("prev"),next=document.getElementById("next");
 function esc(v){return String(v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function encodePath(p){return p.split("/").map(encodeURIComponent).join("/");}
@@ -405,13 +419,23 @@ function renderBlocks(lines,path){
  fp();cl();fq();return out.join("");
 }
 function renderMarkdown(text,path){text=text.replace(/\r/g,"").replace(/^标题：\s*\n+[^\n]+\n*/,"");return renderBlocks(text.split("\n"),path);}
-function renderDirectory(){var q=search.value.trim().toLocaleLowerCase(),list=docs.filter(function(d){return !q||(defaultTitle(d)+" "+d.path).toLocaleLowerCase().indexOf(q)>=0;}),html="";
- folders.forEach(function(f){var all=docs.filter(function(d){return d.folder===f.path;}),visible=list.filter(function(d){return d.folder===f.path;});if(!all.length)return;html+='<details class="group" open><summary>'+esc(f.label)+'<span>'+visible.length+' / '+all.length+'</span></summary><div class="chapter-list">';visible.forEach(function(d){html+='<button class="chapter" type="button" data-path="'+esc(d.path)+'" aria-current="'+(d.path===activePath?"true":"false")+'"><span class="chapter-no">'+String(number(d.path)).padStart(4,"0")+'</span><span class="chapter-name">'+esc(defaultTitle(d))+'</span></button>';});html+="</div></details>";});
+function renderDirectory(){
+ var q=search.value.trim().toLocaleLowerCase(),list=docs.filter(function(d){return !q||(defaultTitle(d)+" "+d.path).toLocaleLowerCase().indexOf(q)>=0;}),html="",scrollTop=directory.scrollTop;
+ folders.forEach(function(f){
+  var all=docs.filter(function(d){return d.folder===f.path;}),visible=list.filter(function(d){return d.folder===f.path;});
+  if(!all.length)return;
+  var isOpen=q?visible.length>0:folderOpenState[f.path]!==false;
+  var hasCurrent=all.some(function(d){return d.path===activePath;});
+  html+='<details class="group'+(hasCurrent?' has-current':'')+'" data-folder="'+esc(f.path)+'"'+(isOpen?' open':'')+'><summary>'+esc(f.label)+'<span>'+visible.length+' / '+all.length+'</span></summary><div class="chapter-list">';
+  visible.forEach(function(d){html+='<button class="chapter" type="button" data-path="'+esc(d.path)+'" aria-current="'+(d.path===activePath?"true":"false")+'"><span class="chapter-no">'+String(number(d.path)).padStart(4,"0")+'</span><span class="chapter-name">'+esc(defaultTitle(d))+'</span></button>';});
+  html+="</div></details>";
+ });
  directory.innerHTML=html||'<div class="no-results">没有找到匹配章节。</div>';
+ directory.scrollTop=scrollTop;
 }
 function currentIndex(){return docs.findIndex(function(d){return d.path===activePath;});}
 function controls(){var i=currentIndex(),d=docs[i];prev.disabled=i<=0;next.disabled=i<0||i>=docs.length-1;if(d){crumb.innerHTML="<strong>"+esc(d.folderLabel)+"</strong> / "+esc(defaultTitle(d));source.href="https://github.com/"+OWNER+"/"+REPO+"/blob/"+BRANCH+"/"+encodePath(d.path);}}
-async function openDoc(path,pushHash){var d=docs.find(function(x){return x.path===path;});if(!d)return;activePath=path;var id=++requestId;renderDirectory();controls();articleScroll.innerHTML='<div class="status">正在读取章节内容…</div>';if(pushHash)history.pushState(null,"","#doc="+encodeURIComponent(path));document.title=defaultTitle(d)+" · AI 副业赚钱手册";
+async function openDoc(path,pushHash){var d=docs.find(function(x){return x.path===path;});if(!d)return;activePath=path;var folder=folders.find(function(f){return path.indexOf(f.path+"/")===0;});if(folder)folderOpenState[folder.path]=true;var id=++requestId;renderDirectory();var selected=directory.querySelector(".chapter[aria-current=\"true\"]");if(selected)selected.scrollIntoView({block:"nearest"});controls();articleScroll.innerHTML='<div class="status">正在读取章节内容…</div>';if(pushHash)history.pushState(null,"","#doc="+encodeURIComponent(path));document.title=defaultTitle(d)+" · AI 副业赚钱手册";
  try{var r=await fetch(rawUrl(path),{cache:"no-cache"});if(!r.ok)throw new Error("GitHub 返回 "+r.status);var text=await r.text();if(id!==requestId)return;d.title=titleOf(text,path);renderDirectory();controls();articleScroll.innerHTML='<article class="article">'+renderMarkdown(text,path)+'</article>';articleScroll.scrollTop=0;document.title=d.title+" · AI 副业赚钱手册";}
  catch(e){if(id!==requestId)return;articleScroll.innerHTML='<div class="status error">这章暂时无法加载：'+esc(e.message)+'。<br><button class="retry" id="retry">重试</button></div>';document.getElementById("retry").addEventListener("click",function(){openDoc(path,false);});}
 }
@@ -422,7 +446,7 @@ async function loadDirectory(){directory.innerHTML='<div class="status">正在�
  totalCount.textContent=docs.length+" 章";renderDirectory();var wanted="";try{wanted=new URLSearchParams(location.hash.slice(1)).get("doc")||"";}catch(e){}if(!docs.some(function(d){return d.path===wanted;}))wanted=(docs.find(function(d){return d.folder===folders[0].path;})||docs[0]||{}).path||"";if(wanted)openDoc(wanted,!location.hash);else directory.innerHTML='<div class="status">仓库中没有找到 Markdown 章节。</div>';
  }catch(e){totalCount.textContent="读取失败";directory.innerHTML='<div class="status error">目录暂时无法读取：'+esc(e.message)+'。<br><button class="retry" id="retry-index">重试</button></div>';document.getElementById("retry-index").addEventListener("click",loadDirectory);}
 }
-directory.addEventListener("click",function(e){var b=e.target.closest("[data-path]");if(b)openDoc(b.dataset.path,true);});
+directory.addEventListener("toggle",function(e){var group=e.target;if(group&&group.matches&&group.matches("details.group[data-folder]"))folderOpenState[group.dataset.folder]=group.open;},true);\ndirectory.addEventListener("click",function(e){var b=e.target.closest("[data-path]");if(b)openDoc(b.dataset.path,true);});
 articleScroll.addEventListener("click",function(e){var a=e.target.closest("[data-doc]");if(a){e.preventDefault();openDoc(a.dataset.doc,true);}});
 search.addEventListener("input",renderDirectory);
 prev.addEventListener("click",function(){var i=currentIndex();if(i>0)openDoc(docs[i-1].path,true);});
