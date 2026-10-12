@@ -73,7 +73,7 @@ jobs:
           reading_link = "> 📖 [打开在线阅读](https://1wtc2.github.io/ai-money-maker-handbook/) · 左侧按章节浏览，右侧阅读正文"
           title = "# 兼职赚钱方案博物馆"
           if reading_link not in text:
-              text = text.replace(title, f"{title}\\n\\n{reading_link}", 1)
+              text = text.replace(title, f"{title}\n\n{reading_link}", 1)
           path.write_text(text, encoding="utf-8")
           PY
           git add -- README.md
