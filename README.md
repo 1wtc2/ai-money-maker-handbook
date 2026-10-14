@@ -1,11 +1,11 @@
 # 兼职赚钱方案博物馆
 
-> 📖 [打开在线阅读](https://1wtc2.github.io/ai-money-maker-handbook/) · 左侧按章节浏览，右侧阅读正文
+> 📖 [打开在线阅读](https://cc-studio-hub.github.io/ai-money-maker-handbook/) · 左侧按章节浏览，右侧阅读正文
 
 ## 贡献方式
 欢迎大家贡献关于使用AI赚钱的案例，包括文章、网站、博客、推文等。
 ## 贡献方法
- - 欢迎投稿，推荐或自荐文章/软件/资源，请[提交 issue](https://github.com/1wtc2/ai-money-maker-handbook/issues/new) 。
+ - 欢迎投稿，推荐或自荐文章/软件/资源，请[提交 issue](https://github.com/cc-studio-hub/ai-money-maker-handbook/issues/new) 。
 ## AI副业赚钱资讯合集
 这是一个关于AI副业赚钱方法、工具和平台的合集，希望帮助大家在AI时代利用智能技术赚取工作之余的额外收入。
 ## 如何开始副业最稳妥
@@ -19,7 +19,7 @@
 ## 常用资源清单
 🌍 [跨境出海技术栈](https://github.com/XiaomingX/indie-hacker-tools-plus)
 
-🤖 [AI搞钱原则手册](https://github.com/1wtc2/ai-money-maker-handbook)
+🤖 [AI搞钱原则手册](https://github.com/cc-studio-hub/ai-money-maker-handbook)
 
 🛠️ [构建你自己的X](https://github.com/XiaomingX/build-your-own-xxx)
 
