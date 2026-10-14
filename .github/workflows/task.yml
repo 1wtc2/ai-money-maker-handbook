@@ -68,9 +68,9 @@ jobs:
           text = path.read_text(encoding="utf-8")
           text = text.replace(
               "https://github.com/XiaomingX/ai-money-maker-handbook",
-              "https://github.com/1wtc2/ai-money-maker-handbook",
+              "https://github.com/cc-studio-hub/ai-money-maker-handbook",
           )
-          reading_link = "> 📖 [打开在线阅读](https://1wtc2.github.io/ai-money-maker-handbook/) · 左侧按章节浏览，右侧阅读正文"
+          reading_link = "> 📖 [打开在线阅读](https://cc-studio-hub.github.io/ai-money-maker-handbook/) · 左侧按章节浏览，右侧阅读正文"
           title = "# 兼职赚钱方案博物馆"
           if reading_link not in text:
               text = text.replace(title, f"{title}\n\n{reading_link}", 1)
